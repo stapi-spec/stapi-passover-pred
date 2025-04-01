@@ -1,0 +1,24 @@
+[project]
+name = "satellite-orbit-predictor"
+version = "0.1.0"
+description = "A FastAPI application for predicting satellite positions"
+authors = [
+    { name = "Dylan Bartels", email = "dylan.j.bartels@gmail.com" }
+]
+dependencies = [
+    "fastapi>=0.109.2",
+    "uvicorn>=0.27.1",
+    "skyfield>=1.50",
+    "pydantic>=2.6.1",
+]
+requires-python = ">=3.10"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+serve = "satellite_orbit_predictor.app:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/satellite_orbit_predictor"]
