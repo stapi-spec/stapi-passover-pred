@@ -6,7 +6,7 @@ FastAPI service that predicts satellite positions using CelesTrak data.
 
 ```bash
 # Install dependencies
-uv pip install -r requirements.txt
+uv sync
 
 # Run server
 uv run uvicorn src.satellite_orbit_predictor.app:app --host 0.0.0.0 --port 8000 --reload
@@ -18,7 +18,7 @@ Server runs at `http://localhost:8000`
 
 ```bash
 # Predict satellite position
-curl "http://localhost:8000/predict?satellite=ISS&datetime_str=2025-04-01T12:00:00Z"
+curl "http://localhost:8000/predict?satellite=38012&temporal=2025-04-11T12:00:00Z"
 ```
 
 Response:

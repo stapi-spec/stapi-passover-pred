@@ -21,25 +21,19 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/predict")
 def predict_satellite(
-    satellite: str = Query(..., description="NORAD ID of the satellite"),
-    datetime_str: str = Query(..., description="Date-time in ISO format, e.g., '2025-04-01T12:00:00Z'")
+    satellite: int = Query(..., description="NORAD ID of the satellite"),
+    temporal: datetime = Query(..., description="Date-time in ISO format, e.g., '2025-04-01T12:00:00Z'")
 ):
     sat = satellites.get(int(satellite))
 
-    # Parse datetime string
-    try:
-        dt = datetime.fromisoformat(datetime_str.replace("Z", "+00:00"))
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid datetime format")
-
     # Predict position
-    t = ts.from_datetime(dt)
+    t = ts.from_datetime(temporal)
     geocentric = sat.at(t)
     subpoint = geocentric.subpoint()
 
     return {
         "satellite": sat.name,
-        "datetime": datetime_str,
+        "datetime": temporal.isoformat() + "Z",
         "latitude": subpoint.latitude.degrees,
         "longitude": subpoint.longitude.degrees,
         "altitude": subpoint.elevation.km,
