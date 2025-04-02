@@ -1,16 +1,18 @@
-from fastapi import FastAPI, HTTPException, Query
-from skyfield.api import load
-from datetime import datetime
+from fastapi import FastAPI, HTTPException, Body, Path
+from skyfield.api import load, wgs84, utc
 import uvicorn
 from contextlib import asynccontextmanager
+from stapi_pydantic import OpportunityPayload
 
 app = FastAPI()
 
-ACTIVE_SATS_URL = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active"
+ACTIVE_SATS_URL = "http://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle"
 
 constellations = {
-    "orbital-sidekick": {"ghost-1":56195, "ghost-2":56197, "ghost-3":56958, "ghost-4":59133, "ghost-5":59130},
+    "orbital-sidekick": {"GHOST-1":56195, "GHOST-2":56197, "GHOST-3":56958, "GHOST-4":59133, "GHOST-5":59130},
 }
+satellites = load.tle_file(ACTIVE_SATS_URL)
+satellite_dict = {sat.name: sat for sat in satellites}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,29 +25,36 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-@app.get("/opportunities")
+@app.post("/opportunities/{constellation}")
 def opportunities(
-    constellation: str = Query(..., description="Constellation name"),
-    temporal: datetime = Query(..., description="Date-time in ISO format, e.g., '2025-04-01T12:00:00Z'")
+    constellation: str = Path(..., description="Constellation name"),
+    opportunity: OpportunityPayload = Body(..., description="Opportunity payload")
 ):
-    passovers = []
-    for satellite in constellations[constellation]:
-        sat = satellites.get(int(satellite))
+    ts = load.timescale()
+    start_time = ts.from_datetime(opportunity.datetime[0].replace(tzinfo=utc))
+    end_time = ts.from_datetime(opportunity.datetime[1].replace(tzinfo=utc))
+    location = wgs84.latlon(opportunity.geometry.coordinates[1], opportunity.geometry.coordinates[0])
+    passes = []
 
-        # Predict position
-        t = ts.from_datetime(temporal)
-        geocentric = sat.at(t)
-        subpoint = geocentric.subpoint()
+    for satellite_name, norad_id in constellations[constellation].items():
+        satellite = satellite_dict[satellite_name]
+        t, events = satellite.find_events(location, start_time, end_time, altitude_degrees=50.0)
 
-        passovers.append({
-            "satellite": sat.name,
-            "datetime": temporal.isoformat() + "Z",
-            "latitude": subpoint.latitude.degrees,
-            "longitude": subpoint.longitude.degrees,
-            "altitude": subpoint.elevation.km,
-        })
+        for ti, event in zip(t, events):
+            if event == 0:
+                position = satellite.at(ti)
+                wgs84_position = wgs84.geographic_position_of(position)
+                pass_info = {
+                    "satellite": satellite_name,
+                    "datetime": ti.utc_datetime().strftime("%Y-%m-%dT%H:%M:%S"),
+                    "altitude": wgs84_position.elevation.km
+                }
+                passes.append(pass_info)
+        
+    if not passes:
+        raise HTTPException(status_code=404, detail="No Umbra satellites passing over the specified location within the given time range")
 
-    return passovers
+    return passes
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
