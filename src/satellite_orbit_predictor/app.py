@@ -42,17 +42,21 @@ def opportunities(
 
         for ti, event in zip(t, events):
             if event == 0:
-                position = satellite.at(ti)
-                wgs84_position = wgs84.geographic_position_of(position)
+                difference = satellite - location
+                topocentric = difference.at(ti)
+
+                _, az, _ = topocentric.altaz()
+
+                sat_pos = satellite.at(ti)
+                subpoint = wgs84.subpoint(sat_pos)
+
                 pass_info = {
                     "satellite": satellite_name,
                     "datetime": ti.utc_datetime().strftime("%Y-%m-%dT%H:%M:%S"),
-                    "altitude": wgs84_position.elevation.km
+                    "altitude": subpoint.elevation.km,
+                    "azimuth": az.degrees
                 }
                 passes.append(pass_info)
-        
-    if not passes:
-        raise HTTPException(status_code=404, detail="No Umbra satellites passing over the specified location within the given time range")
 
     return passes
 
