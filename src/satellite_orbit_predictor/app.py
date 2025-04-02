@@ -8,6 +8,10 @@ app = FastAPI()
 
 ACTIVE_SATS_URL = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active"
 
+constellations = {
+    "orbital-sidekick": {"ghost-1":56195, "ghost-2":56197, "ghost-3":56958, "ghost-4":59133, "ghost-5":59130},
+}
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global satellites, ts
@@ -19,25 +23,29 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-@app.get("/predict")
-def predict_satellite(
-    satellite: int = Query(..., description="NORAD ID of the satellite"),
+@app.get("/opportunities")
+def opportunities(
+    constellation: str = Query(..., description="Constellation name"),
     temporal: datetime = Query(..., description="Date-time in ISO format, e.g., '2025-04-01T12:00:00Z'")
 ):
-    sat = satellites.get(int(satellite))
+    passovers = []
+    for satellite in constellations[constellation]:
+        sat = satellites.get(int(satellite))
 
-    # Predict position
-    t = ts.from_datetime(temporal)
-    geocentric = sat.at(t)
-    subpoint = geocentric.subpoint()
+        # Predict position
+        t = ts.from_datetime(temporal)
+        geocentric = sat.at(t)
+        subpoint = geocentric.subpoint()
 
-    return {
-        "satellite": sat.name,
-        "datetime": temporal.isoformat() + "Z",
-        "latitude": subpoint.latitude.degrees,
-        "longitude": subpoint.longitude.degrees,
-        "altitude": subpoint.elevation.km,
-    }
+        passovers.append({
+            "satellite": sat.name,
+            "datetime": temporal.isoformat() + "Z",
+            "latitude": subpoint.latitude.degrees,
+            "longitude": subpoint.longitude.degrees,
+            "altitude": subpoint.elevation.km,
+        })
+
+    return passovers
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
