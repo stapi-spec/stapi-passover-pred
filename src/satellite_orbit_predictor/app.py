@@ -53,7 +53,7 @@ def opportunities(
                 pass_info = {
                     "satellite": satellite_name,
                     "datetime": ti.utc_datetime().strftime("%Y-%m-%dT%H:%M:%S"),
-                    "altitude_km": subpoint.elevation.km,
+                    "altitude": subpoint.elevation.km,
                     "azimuth": az.degrees
                 }
                 passes.append(pass_info)
