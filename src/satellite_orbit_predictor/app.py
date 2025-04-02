@@ -25,7 +25,7 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/opportunities")
 def opportunities(
-    constellation: int = Query(..., description="NORAD ID of the satellite"),
+    constellation: str = Query(..., description="Constellation name"),
     temporal: datetime = Query(..., description="Date-time in ISO format, e.g., '2025-04-01T12:00:00Z'")
 ):
     passovers = []
