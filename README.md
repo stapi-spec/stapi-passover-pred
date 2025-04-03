@@ -33,16 +33,85 @@ curl -X POST "http://localhost:8000/products/orbital-sidekick/opportunities" \
 
 Response:
 ```json
-[
-  {"satellite":"GHOST-1","datetime":"2025-04-11T22:33:12","altitude":429.07439378005614 "azimuth":28.574388573135575},
-  {"satellite":"GHOST-2","datetime":"2025-04-11T22:31:19","altitude":405.1201764276592,"azimuth":77.10403184757281},
-  {"satellite":"GHOST-4","datetime":"2025-04-11T00:43:20","altitude":483.50380330533676,"azimuth":199.82511673545932},
-  {"satellite":"GHOST-4","datetime":"2025-04-11T13:36:23","altitude":491.647469776105,"azimuth":50.18517804815514}
-]
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.405, 52.52]
+      },
+      "properties": {
+        "datetime": "2025-04-11T22:33:12.760224+00:00/2025-04-11T22:34:40.473005+00:00",
+        "product_id": "orbital-sidekick",
+        "satellite": "GHOST-1",
+        "altitude": 428.3845855309221,
+        "azimuth": 103.11218045332878
+      },
+      "id": "GHOST-1",
+      "links": []
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.405, 52.52]
+      },
+      "properties": {
+        "datetime": "2025-04-11T22:31:19.470434+00:00/2025-04-11T22:31:54.260710+00:00",
+        "product_id": "orbital-sidekick",
+        "satellite": "GHOST-2",
+        "altitude": 404.863092712036,
+        "azimuth": 100.79918372810874
+      },
+      "id": "GHOST-2",
+      "links": []
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.405, 52.52]
+      },
+      "properties": {
+        "datetime": "2025-04-11T00:43:20.412142+00:00/2025-04-11T00:44:47.884168+00:00",
+        "product_id": "orbital-sidekick",
+        "satellite": "GHOST-4",
+        "altitude": 484.4707649864979,
+        "azimuth": 257.96599673620267
+      },
+      "id": "GHOST-4",
+      "links": []
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.405, 52.52]
+      },
+      "properties": {
+        "datetime": "2025-04-11T13:36:23.023887+00:00/2025-04-11T13:37:45.005056+00:00",
+        "product_id": "orbital-sidekick",
+        "satellite": "GHOST-4",
+        "altitude": 491.14467955791997,
+        "azimuth": 101.88144667577255
+      },
+      "id": "GHOST-4",
+      "links": []
+    }
+  ],
+  "links": [
+    {
+      "href": "http://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle",
+      "rel": "via"
+    }
+  ],
+  "id": null
+}
 ```
 
 ## Documentation
 
-- API docs: http://localhost:8000/docs
 - Data source: CelesTrak stations feed
 - All coordinates in degrees, altitude in km
